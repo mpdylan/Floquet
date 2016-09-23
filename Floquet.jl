@@ -16,7 +16,7 @@ function permat(pot::Array, h)
   return C
 end
 
-function discriminant(pot::Array, z::Number)
+function discRL(pot::Array, z::Number)
   n = length(pot)
   truncpot = pot[2:n-1]
   A = SymTridiagonal(pot, ones(typeof(pot[1]),n-1)) - SymTridiagonal(fill(z, n), zeros(n-1))
@@ -24,10 +24,9 @@ function discriminant(pot::Array, z::Number)
   return (det(A) - det(B))
 end
 
-function scatter()
-
+function discUC(pot::Array, z::Number)
+  
 end
-
 
 
 end
