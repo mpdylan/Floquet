@@ -41,18 +41,19 @@ function discRL(pot::Array, x::Number)
   return (det(A) - det(B))
 end
 
-function rmatUC(α::Complex, z::Complex)
+function rmatUC(α::Complex, z::Number)
 
   A = Array(typeof(α), 2, 2)
   A[1,1] = z
   A[1,2] = -1 * conj(α)
   A[2,1] = -α * z
   A[2,2] = 1
+  A /= sqrt(1 - α*conj(α))
   A
 
 end
 
-function tmatUC(α::Array, z::Complex)
+function tmatUC(α::Array, z::Number)
 
   n = length(α)
   A = eye(2)
@@ -68,7 +69,7 @@ function discUC(α::Array, z::Number)
   if isodd(n)
     error("For technical reasons we assume even period")
   end
-  return z^(-p/2) * trace(tmatUC(α, z))
+  return z^(-n/2) * trace(tmatUC(α, z))
 end
 
 end
