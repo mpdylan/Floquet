@@ -35,14 +35,23 @@ end
 
 function discRL(pot::Array, x::Number)
   n = length(pot)
-  truncpot = pot[2:n-1]
   A = SymTridiagonal(pot, ones(typeof(pot[1]),n-1)) - SymTridiagonal(fill(x, n), zeros(n-1))
-  B = SymTridiagonal(truncpot, ones(typeof(pot[1]), n-3)) - SymTridiagonal(fill(x, n-2), zeros(n-3))
+  B = SymTridiagonal(pot[2:n-1], ones(typeof(pot[1]), n-3)) - SymTridiagonal(fill(x, n-2), zeros(n-3))
   return (det(A) - det(B))
 end
 
-function rmatUC(α::Complex, z::Number)
+#Incomplete, fix this
+function rmatGC(α::Number, z::Number, j::Int64)
+  A = Array(typeof(α), 2, 2)
+  A[1,1] = z
+  A[1,2] = -1 * conj(α) * z^j
+  A[2,1] = -α * z^(-j)
+  A[2,2] = z^-1
+  A /=  #Need to fill in the correct norming constant here!
+  A
+end
 
+function rmatUC(α::Number, z::Number)
   A = Array(typeof(α), 2, 2)
   A[1,1] = z
   A[1,2] = -1 * conj(α)
@@ -50,11 +59,9 @@ function rmatUC(α::Complex, z::Number)
   A[2,2] = 1
   A /= sqrt(1 - α*conj(α))
   A
-
 end
 
 function tmatUC(α::Array, z::Number)
-
   n = length(α)
   A = eye(2)
   for i = 1:n
@@ -63,8 +70,12 @@ function tmatUC(α::Array, z::Number)
   A
 end
 
-function discUC(α::Array, z::Number)
+function tmatGC(α::Array, z::Number)
+  A = tmatUC(α, z)
+  A *= diagm([1, z^(-n)])
+end
 
+function discUC(α::Array, z::Number)
   n = length(α)
   if isodd(n)
     error("For technical reasons we assume even period")
