@@ -1,5 +1,14 @@
 module Floquet
 
+function floqdisc(f, λ, P)
+  function rhs(t, y)
+    return [y[2], f(t)*y[1] - λ*y[1]]
+  end
+  t1, y1 = ode45(rhs, [1.,0.], [0., P])
+  t2, y2 = ode45(rhs, [0.,1.], [0., P])
+  0.5*(y1[end][1] + y2[end][2])
+end
+
 function permat(pot::Array, h)
   n = 2*length(pot)
   C = zeros(typeof(h), n, n)
