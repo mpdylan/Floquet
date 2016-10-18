@@ -3,15 +3,16 @@ module Floquet
 import ODE.ode23
 
 function spike(disc::Function, domain)
-  δ = domain[2] - domain[1]
+  #δ = domain[2] - domain[1]
   y = map(disc, domain) + 0.*im
-  dy = diff(y) / δ
+  #dy = diff(y) / δ
+  dy = diff(y)
   spre = zeros(dy)
   spim = zeros(dy)
   spsq = sqrt(1 - y .^ 2)
   for i = 1:(length(dy)-1)
-    spre[i+1] = spre[i] + real(abs(dy[i]) / spsq[i])
-    spim[i+1] = spim[i] + imag(abs(dy[i]) / spsq[i])
+    spre[i+1] = spre[i] + abs(real(dy[i] / spsq[i]))
+    spim[i+1] = spim[i] + imag(dy[i] / spsq[i])
   end
   return spre, spim
 end
