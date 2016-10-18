@@ -2,8 +2,23 @@ module Floquet
 
 import ODE.ode23
 
+function spike(disc::Function, domain)
+  δ = domain[2] - domain[1]
+  y = map(disc, domain) + 0.*im
+  dy = diff(y) / δ
+  spre = zeros(dy)
+  spim = zeros(dy)
+  spsq = sqrt(1 - y .^ 2)
+  for i = 1:(length(dy)-1)
+    spre[i+1] = spre[i] + real(abs(dy[i]) / spsq[i])
+    spim[i+1] = spim[i] + imag(abs(dy[i]) / spsq[i])
+  end
+  return spre, spim
+end
+
 ## Routines for the continuous setting
 
+# The Floquet discriminant for a Schroedinger operator on \R
 function disccts(f, λ, P)
   function rhs(t, y)
     return [y[2], f(t)*y[1] - λ*y[1]]
