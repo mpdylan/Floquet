@@ -1,8 +1,9 @@
 module Floquet
 
 import ODE.ode23
+importall Polynomials
 
-function spike(disc::Function, domain)
+function spike(disc::Function, domain, p::Number)
   #δ = domain[2] - domain[1]
   y = map(disc, domain) + 0.*im
   #dy = diff(y) / δ
@@ -14,7 +15,7 @@ function spike(disc::Function, domain)
     spre[i+1] = spre[i] + abs(real(dy[i] / spsq[i]))
     spim[i+1] = spim[i] + imag(dy[i] / spsq[i])
   end
-  return spre, spim
+  return (1/p)*spre, spim
 end
 
 ## Routines for the continuous setting
@@ -120,6 +121,12 @@ function discUC(α::Array, z::Number)
     error("For annoying technical reasons we assume even period. Try a vector of even length")
   end
   return z^(-n/2) * trace(tmatUC(α, z))
+end
+
+function trco(α::Array)
+
+function envelopeUC(α::Array)
+
 end
 
 end
