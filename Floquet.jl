@@ -2,6 +2,7 @@ module Floquet
 
 import ODE.ode23
 importall Polynomials
+#importall OPUC
 
 function spike(disc::Function, domain, p::Number)
   #δ = domain[2] - domain[1]
@@ -123,10 +124,15 @@ function discUC(α::Array, z::Number)
   return z^(-n/2) * trace(tmatUC(α, z))
 end
 
-function trco(α::Array)
-
-function envelopeUC(α::Array)
-
+function trco(α::Array, z::Number)
+  T = tmatUC(α,z)
+  ϕ = (T * [1., 1.])[1]
+  ψ = -(T * [1., -1.])[1]
+  return z^(-length(α)/2) * (ϕ + ψ)
 end
 
+function dirichlet(α::Array, z::Number)
+  T = tmatUC(α,z)
+  ϕ = T * [1., 1.]
+  return ϕ[2] - ϕ[1]
 end
