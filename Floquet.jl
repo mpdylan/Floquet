@@ -136,3 +136,5 @@ function dirichlet(α::Array, z::Number)
   ϕ = T * [1., 1.]
   return ϕ[2] - ϕ[1]
 end
+
+end
