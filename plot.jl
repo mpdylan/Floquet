@@ -56,6 +56,46 @@ function spikeUC(disc::Function, domain)
   y
 end
 
+
+
+function adspikeUC(α::Array, tol::Float64)
+  if tol <= 0
+    error("Tolerance must be positive")
+  end
+  currentx = 0
+  dx = 1/tol
+  y = 0.
+  disc(x) = real(Floquet.discUC(α, exp(im * x)))
+  function nextstep()
+    dy = abs(disc(currentx + dx) - disc(currentx))
+    dx *= tol/dy
+    #y = disc(currentx + dx)
+    #currentx += dx
+  end
+  if abs(disc(0)) < 2                #First we seek the first lower band edge
+    while true                       #If we started inside a band we have to proceed through the next gap
+      nextstep()
+      y = disc(currentx + dx)
+      currentx += dx
+      if abs(y) > 2
+        break
+      end
+    end
+  end
+  while true                         #The next part is to locate the lower band edge. If we didn't start in a band we can begin here
+      nextstep()
+      y = disc(currentx + dx)
+      if abs(y) < 2
+        break
+      end
+      currentx += dx
+  end
+                                     #Now we compute the spike map
+
+
+end
+
+
   
 function spike(disc::Function, domain, p::Number)
   #δ = domain[2] - domain[1]
