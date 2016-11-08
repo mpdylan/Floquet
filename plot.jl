@@ -97,7 +97,7 @@ function adspikeUC(disc::Function, tol::Float64)
         break
       end
   end
-  print(currentx)
+  #print(currentx)
                                      #Now we compute the spike map
   start = currentx
   stepest = round(2π / mintol) 
@@ -121,6 +121,7 @@ function adspikeUC(disc::Function, tol::Float64)
     y = y2
     currentx += dx
     y2 = disc(currentx)
+    dy = y2 - y
   end
   if i <= length(output1)
     resize!(output1, i-1)
@@ -143,6 +144,7 @@ function adspikeUC(disc::Function, tol::Float64)
     y = y2
     currentx += dx
     y2 = disc(currentx)
+    dy = y2 - y
   end
   if i <= length(output0)
     resize!(output0, i-1)
