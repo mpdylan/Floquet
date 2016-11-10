@@ -68,6 +68,7 @@ function adspikeUC(disc::Function, tol::Float64)
   y = 0.
   #disc(x) = real(Floquet.discUC(α, exp(im * x)))
   function nextstep()
+
     dy = abs(disc(currentx + dx) - disc(currentx))
     dx *= tol/dy
     if dx < mintol
