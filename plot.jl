@@ -70,21 +70,25 @@ function adspikeUC(disc::Function, tol::Float64)
   function nextstep()
 
     dy = abs(disc(currentx + dx) - disc(currentx))
-    dx *= tol/dy
+    sq = abs(sqrt(4 + 0.0im - y^2))
+
+    dx *= tol/(dy/sq)
+
+    dx = min(dx, sq)
     if dx < mintol
       mintol = dx
     end
-    #print(dx)
+    #print("dx is ", dx, ", dy is", dy, ",sq is ", sq, "\n")
     #y = disc(currentx + dx)
     #currentx += dx
   end
-  if abs(disc(0)) < 2                #First we seek the first lower band edge
+  if disc(0) < 0                     #I want to start inside a band.
     while true                       #If we started inside a band we have to proceed through the next gap
       nextstep()
       y = disc(currentx + dx)
       currentx += dx
       #print(currentx, "\n")
-      if abs(y) > 2
+      if y > 0
         break
       end
     end
@@ -94,12 +98,13 @@ function adspikeUC(disc::Function, tol::Float64)
       y = disc(currentx + dx)
       currentx += dx
       #print(currentx, "\n")
-      if abs(y) < 2
+      if y < 0
         break
       end
   end
   #print(currentx)
                                      #Now we compute the spike map
+  print("Started at ", currentx, " where y = ", disc(currentx), "\n")
   start = currentx
   stepest = round(2π / mintol) 
   output1 = zeros(Complex{Float64}, Int64(round(stepest*(1 - currentx / (2π)))))
@@ -110,14 +115,18 @@ function adspikeUC(disc::Function, tol::Float64)
   i = 1
   while currentx < 2π
     sq = sqrt(4. + 0.0im - y^2)
-    if i < length(output1)
-      output1[i+1] = output1[i] + sign(dy) * real(dy / sq) - im * sign(y) * imag(dy / sq)
-      i += 1
-    else
-      nextout = output1[i] + sign(dy) * real(dy / sq) - im * sign(y) * imag(dy / sq)
-      output1 = vcat(output1, nextout)
-      i += 1
-    end
+    dω = dy / sq
+    print(abs(dω), "\n")
+    #if abs(dω) < tol 
+      if i < length(output1)
+        output1[i+1] = output1[i] + sign(dy) * real(dω) - im * sign(y) * imag(dω)
+        i += 1
+      else
+        nextout = output1[i] + sign(dy) * real(dω) - im * sign(y) * imag(dω)
+        output1 = vcat(output1, nextout)
+        i += 1
+      end
+    #end
     nextstep()
     y = y2
     currentx += dx
@@ -129,18 +138,21 @@ function adspikeUC(disc::Function, tol::Float64)
   end
   currentx = 0
   i = 1
-#  sq = sqrt(4. + 0.0im - y^2)
-#  output0[1] = output1[end] + sign(dy) * real(dy / sq) - im * sign(y) * imag(dy / sq)
+  sq = sqrt(4. + 0.0im - y^2)
+  output0[1] = output1[end] + sign(dy) * real(dy / sq) - im * sign(y) * imag(dy / sq)
   while currentx < start
-      sq = sqrt(4. + 0.0im - y^2)
-    if i < length(output0)
-      output0[i+1] = output0[i] + sign(dy) * real(dy / sq) - im * sign(y) * imag(dy / sq)
-      i += 1
-    else
-      nextout = output0[i] + sign(dy) * real(dy / sq) - im * sign(y) * imag(dy / sq)
-      output0 = vcat(output0, nextout)
-      i += 1
-    end
+    sq = sqrt(4. + 0.0im - y^2)
+    dω = dy / sq
+    #if abs(dω) < tol
+      if i < length(output0)
+        output0[i+1] = output0[i] + sign(dy) * real(dω) - im * sign(y) * imag(dω)
+        i += 1
+      else
+        nextout = output0[i] + sign(dy) * real(dω) - im * sign(y) * imag(dω)
+        output0 = vcat(output0, nextout)
+        i += 1
+      end
+    #end
     nextstep()
     y = y2
     currentx += dx
@@ -150,7 +162,7 @@ function adspikeUC(disc::Function, tol::Float64)
   if i <= length(output0)
     resize!(output0, i-1)
   end
-  vcat(output0, output1)
+  return vcat(output0, output1)
 end
 
 
