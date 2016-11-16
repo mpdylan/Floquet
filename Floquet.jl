@@ -89,6 +89,27 @@ end
 
 ## Routines for Szego recursion (OPUC)
 
+# A CMV matrix, periodized
+
+function periodCMV(α::Array, n::Integer, β::Number)
+  M = [-α[n]]
+  ρ = sqrt(1 - abs(α[1])^2)
+  L = reshape([conj(α[1]), ρ, ρ, -α[1]], 2, 2)
+  for i = 2:n-1
+    ρ = sqrt(1 - abs(α[i])^2)
+    θ = reshape([conj(α[i]), ρ, ρ, -α[i]], 2, 2)
+    if iseven(i-1)
+      M = cat([1,2], M, θ)
+    else
+      L = cat([1,2], L, θ)
+    end
+  end
+  M = cat([1,2], M, [conj(α[n])])
+  M[1,n] = (1/β) * sqrt(1 - abs(α[1])^2)
+  M[n,1] = β * sqrt(1 - abs(α[n])^2)
+  L, M
+end
+
 # A recurrence matrix
 function rmatUC(α::Number, z::Number)
   A = Array(typeof(α), 2, 2)
