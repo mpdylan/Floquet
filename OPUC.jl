@@ -50,8 +50,8 @@ end
 
 opuc(α::Array, n::Integer, λ::Complex) = opuc(i -> α[i], n, λ)
 
-opuc1(α, n) = opuc(α, n, 1. + 0.*im)
-opuc2(α, n) = opuc(α, n, -1. + 0.*im)
+opuc1(α, n) = opuc(α, n, 1. + 0.0im)
+opuc2(α, n) = opuc(α, n, -1. + 0.0im)
 
 #Functions for approximating measures on the real line and unit circle
 #On the real line we use Edelman's nearly-Toeplitz approximation to obtain a continuous measure

@@ -158,4 +158,16 @@ function dirichlet(α::Array, z::Number)
   return ϕ[2] - ϕ[1]
 end
 
+function baker(α::Array, n::Integer, z::Number, sign::Integer)
+  coeff(k::Integer) = α[(k % length(α)) + 1]
+  A = tmatUC(α, z)
+  eval, evec = eig(A)
+  denom = evec[:, sign]
+  num = evec[:, sign]
+  for i = 1:n
+    num = rmatUC(coeff(i), z) * num
+  end
+  return (num[1] - num[2]) / (denom[1] - denom[2])
+end
+
 end
