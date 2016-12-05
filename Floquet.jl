@@ -161,9 +161,9 @@ end
 function baker(α::Array, n::Integer, z::Number, sign::Integer)
   coeff(k::Integer) = α[(k % length(α)) + 1]
   A = tmatUC(α, z)
-  eval, evec = eig(A)
+  eigval, evec = eig(A)
   if abs(trace(z^(-length(α) / 2) * A)) > 2
-    evec = evec[:, sortperm(eval, by=abs)]
+    evec = evec[:, sortperm(eigval, by=abs)]
   end
   denom = evec[:, sign]
   num = evec[:, sign]
@@ -176,18 +176,18 @@ end
 function adjbaker(α::Array, n::Integer, z::Number, sign::Integer)
   coeff(k::Integer) = α[(k % length(α)) + 1]
   A = tmatUC(α, z)
-  eval, evec = eig(A)
+  eigval, evec = eig(A)
   if abs(trace(z^(-length(α) / 2) * A)) > 2
-    p = sortperm(eval, by=abs)
+    p = sortperm(eigval, by=abs)
     evec = evec[:, p]
-    permute!(eval, p)
+    permute!(eigval, p)
   end
   denom = evec[:, sign]
   num = evec[:, sign]
   for i = 1:n
     num = rmatUC(coeff(i), z) * num
   end
-  return eval[sign]^(-n / length(α)) * (num[1] - num[2]) / (denom[1] - denom[2])
+  return eigval[sign]^(-n / length(α)) * (num[1] - num[2]) / (denom[1] - denom[2])
 end
 
 function normbaker(α::Array, n::Integer, z::Number, sign::Integer)
@@ -197,9 +197,9 @@ end
 function baker2(α::Array, n::Integer, z::Number, sign::Integer)
   coeff(k::Integer) = α[(k % length(α)) + 1]
   A = tmatUC(α, z)
-  eval, evec = eig(A)
+  eigval, evec = eig(A)
   if abs(trace(z^(-length(α) / 2) * A)) > 2
-    evec = evec[:, sortperm(eval, by=abs)]
+    evec = evec[:, sortperm(eigval, by=abs)]
   end
   denom = evec[:, sign]
   num = evec[:, sign]
