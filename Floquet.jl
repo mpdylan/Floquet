@@ -1,25 +1,18 @@
 module Floquet
 
 import ODE.ode23
+import ForwardDiff.derivative
+importall ApproxFun
+importall Roots
 importall Polynomials
-#importall OPUC
-
-function spike(disc::Function, domain, p::Number)
-  #δ = domain[2] - domain[1]
-  y = map(disc, domain) + 0.*im
-  #dy = diff(y) / δ
-  dy = diff(y)
-  spre = zeros(dy)
-  spim = zeros(dy)
-  spsq = sqrt(1 - y .^ 2)
-  for i = 1:(length(dy)-1)
-    spre[i+1] = spre[i] + abs(real(dy[i] / spsq[i]))
-    spim[i+1] = spim[i] + imag(dy[i] / spsq[i])
-  end
-  return (1/p)*spre, spim
-end
+importall Gadfly
+include("OPUC.jl")
 
 ## Routines for the continuous setting
+
+function truncf(f::Function, truncmax::Float64)
+  return x -> (if x < truncmax f(x) else 0.0 end)
+end
 
 # The Floquet discriminant for a Schroedinger operator on \R
 function disccts(f, λ, P)
@@ -29,6 +22,14 @@ function disccts(f, λ, P)
   t1, y1 = ode23(rhs, [1.,0.], [0., P])
   t2, y2 = ode23(rhs, [0.,1.], [0., P])
   0.5*(y1[end][1] + y2[end][2])
+end
+
+function plotspike(f::Function, P, λmax)
+  disc = Fun(λ -> disccts(f, λ, P), Interval(0, λmax))
+  heights = [acos(x) - eps()*im for x in roots(disc)]
+  locs = [nπ/P for n = 1:length(heights)]
+  p = plot(x=locs, xend=locs, y=-1*heights, yend=heights, Geom.segment)
+  p
 end
 
 ## Routines for Jacobi matrices (OPRL)
@@ -145,6 +146,18 @@ function discUC(α::Array, z::Number)
   return z^(-n/2) * trace(tmatUC(α, z))
 end
 
+function plotspike(α::Array)
+  discriminant = Fun(x -> real(discUC(α, exp(im*x))), Interval(0, 2π))
+  heights = [imag(acos(0.5*discriminant(x) - eps()*im)) for x in roots(discriminant')]
+  locations = [2π*n/length(α) for n=1:length(heights)]
+  p = plot(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment)
+  p
+end
+
+function spikeenv(α::Array)
+
+end
+
 function trco(α::Array, z::Number)
   T = tmatUC(α,z)
   ϕ = (T * [1., 1.])[1]
@@ -156,6 +169,78 @@ function dirichlet(α::Array, z::Number)
   T = tmatUC(α,z)
   ϕ = T * [1., 1.]
   return ϕ[2] - ϕ[1]
+end
+
+function pspec(α::Array{Complex{Float64}})
+  disc = Fun(x -> real(discUC(α, exp(im*x))), Interval(0,2π))
+  return roots(disc - 2)
+end
+
+function apspec(α::Array{Complex{Float64}})
+  disc = Fun(x -> real(discUC(α, exp(im*x))), Interval(0,2π))
+  return roots(disc + 2)
+end
+
+function spiketop(α::Array{Complex{Float64}})
+  disc = Fun(x -> real(discUC(α, exp(im*x))), Interval(0,2π))
+  return roots(disc')
+end
+
+function pspec(f::Function, P::Float64, max::Float64)
+  disc = Fun(λ -> disccts(f, λ, P), Interval(0,max))
+  return roots(disc - 1)
+end
+
+function apspec(f::Function, P::Float64, max::Float64)
+  disc = Fun(λ -> disccts(f, λ, P), Interval(0,max))
+  return roots(disc + 1)
+end
+
+function spiketop(f::Function, P::Float64, max::Float64)
+  disc = Fun(λ -> disccts(f, λ, P), Interval(0,max))
+  return roots(disc')
+end
+
+function spikemap(α::Array{Complex{Float64}})
+
+end
+
+
+
+#function pspec(f::Function, P::Float64, max::Float64)
+#  disc = Fun(λ -> disccts(f, λ, P), 0..max)
+#  return roots(disc - 1)
+#end
+
+#function apspec(f::Function, P::Float64, max::Float64)
+#  disc = Fun(λ -> disccts(f, λ, P), 0..max)
+#  return roots(disc + 1)
+#end
+
+#function spiketop(f::Function, P::Float64, max::Float64)
+#  disc = Fun(λ -> disccts(f, λ, P), 0..max)
+#  return roots(disc')
+#end
+
+
+
+#function spikepeaks(α::Array{Complex{Float64}})
+#
+#end
+#
+#function spikepeaks(f::Function, P::Float64, max::Float64)
+#
+#end
+
+
+function decomp(α, z, sign)
+  A = tmatUC(α, z)
+  eigval, evec = eig(A)
+  evec = evec[:, sortperm(eigval, by=abs)]
+  v = evec[:,sign]
+  η = (v[1] + v[2]) / 2
+  ζ = (v[1] - v[2]) / 2
+  (η, ζ)
 end
 
 function baker(α::Array, n::Integer, z::Number, sign::Integer)
