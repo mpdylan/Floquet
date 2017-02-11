@@ -4,7 +4,7 @@ import ODE.ode23
 import ForwardDiff.derivative
 importall ApproxFun
 importall Roots
-importall Polynomials
+#importall Polynomials
 importall Gadfly
 include("OPUC.jl")
 
@@ -26,7 +26,7 @@ end
 
 function plotspike(f::Function, P, λmax)
   disc = Fun(λ -> disccts(f, λ, P), Interval(0, λmax))
-  heights = [acos(x) - eps()*im for x in roots(disc)]
+  heights = [acos(x) - eps()*im for x in roots(disc')]
   locs = [nπ/P for n = 1:length(heights)]
   p = plot(x=locs, xend=locs, y=-1*heights, yend=heights, Geom.segment)
   p
@@ -75,6 +75,41 @@ function discRL(pot::Array, x::Number)
   A = SymTridiagonal(pot, ones(typeof(pot[1]),n-1)) - SymTridiagonal(fill(x, n), zeros(n-1))
   B = SymTridiagonal(pot[2:n-1], ones(typeof(pot[1]), n-3)) - SymTridiagonal(fill(x, n-2), zeros(n-3))
   return (det(A) - det(B))
+end
+
+function recOPRL(a::Array, b::Array, x::Number)
+  p = x
+  q = 1.
+  tempq = 0.
+  for i = 1:length(b)-1
+    tempq = p
+    p = (1./b[i+1]) * ( (x - a[i])*p - b[i]*q )
+    q = tempq
+  end
+  p
+end
+
+function recOPRL2(a::Array, b::Array, x::Number)
+  p = 1./b[1]
+  q = 0.
+  tempq = 0.
+  for i = 1:length(b)-1
+    tempq = p
+    p = (1./b[i+1]) * ( (x - a[i])*p - b[i]*q )
+    q = tempq
+  end
+  p
+end
+
+recdiscRL(a::Array, b::Array, x::Number) = recOPRL(a, b, x) - recOPRL2(a[1:end-1], b[1:end-1], x)
+
+function plotspike(a::Array{Float64}, b::Array{Float64})
+  disc(x) = recdiscRL(a, b, x)
+  ddisc(x) = derivative(disc, x)
+  heights = [imag(acos(0.5*disc(x) - eps()*im)) for x in fzeros(ddisc, -10, 10, no_pts=2000)]
+  locations = [2π*n/length(heights) for n=1:length(heights)]
+  p = plot(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment)
+  p
 end
 
 # Incomplete, fix this
