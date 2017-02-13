@@ -4,7 +4,7 @@ import ODE.ode23
 import ForwardDiff.derivative
 importall ApproxFun
 importall Roots
-#importall Polynomials
+import Polynomials: Poly, polyval
 importall Gadfly
 include("OPUC.jl")
 
@@ -189,15 +189,25 @@ function plotspike(α::Array)
   p
 end
 
-function spikeenv(α::Array)
-
+function transcoeff(α::Array, p, z)
+  ϕ = OPUC.opuc1(α, p)[1][p] / OPUC.opuc1(α, p)[3][p]
+  ψ = OPUC.opuc2(α, p)[1][p] / OPUC.opuc2(α, p)[3][p]
+  return (z^(-p/2) * (polyval(ϕ, z) + polyval(ψ, z)))
 end
 
-function trco(α::Array, z::Number)
-  T = tmatUC(α,z)
+function trco(α::Array, z::Number, p::Integer)
+  T = tmatUC(α[1:p],z)
   ϕ = (T * [1., 1.])[1]
   ψ = -(T * [1., -1.])[1]
   return z^(-length(α)/2) * (ϕ + ψ)
+end
+
+function plotspike_env(α::Array, p)
+  discriminant = Fun(x -> real(discUC(α, exp(im*x))), Interval(0, 2π))
+  heights = [imag(acos(0.5*discriminant(x) - eps()*im)) for x in roots(discriminant')]
+  locations = [2π*n/length(α) for n=1:length(heights)]
+#  s(z) = transcoeff(α, p)
+  q = plot(layer(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment), layer(x -> acosh(0.5abs(transcoeff(α, p, exp(-im*x)))), 0, 2π))
 end
 
 function dirichlet(α::Array, z::Number)
@@ -220,27 +230,6 @@ function spiketop(α::Array{Complex{Float64}})
   disc = Fun(x -> real(discUC(α, exp(im*x))), Interval(0,2π))
   return roots(disc')
 end
-
-function pspec(f::Function, P::Float64, max::Float64)
-  disc = Fun(λ -> disccts(f, λ, P), Interval(0,max))
-  return roots(disc - 1)
-end
-
-function apspec(f::Function, P::Float64, max::Float64)
-  disc = Fun(λ -> disccts(f, λ, P), Interval(0,max))
-  return roots(disc + 1)
-end
-
-function spiketop(f::Function, P::Float64, max::Float64)
-  disc = Fun(λ -> disccts(f, λ, P), Interval(0,max))
-  return roots(disc')
-end
-
-function spikemap(α::Array{Complex{Float64}})
-
-end
-
-
 
 #function pspec(f::Function, P::Float64, max::Float64)
 #  disc = Fun(λ -> disccts(f, λ, P), 0..max)
