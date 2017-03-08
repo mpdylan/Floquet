@@ -6,11 +6,11 @@ module OPUC
 
 importall Polynomials
 
-export opuc, opuc1, opuc2
+export opuc, opuc1, opuc2, oprl, oprl2
 
 const τ = 2π
 
-const Z = Poly([0.,1. + 0.*im])
+const Z = Poly([0.,1. + 0.0im])
 const X = Poly([0.,1.])
 
 #The following functions generate orthogonal polynomials using the recurrence relations.
@@ -64,6 +64,37 @@ function bsmeasure(α::Function, n::Integer)
   ϕ = x -> (1/sqrt(norms[n]))*polyval(p[n],x)
   return (θ -> 1./(τ*abs(ϕ(exp(im*θ)))^2))
 end
+
+#One recursive step for OPRL: Given p = p_{n - 1} and q = p_{n - 2}, return p_n
+function oprl_recurse(a::Number, b::Number, b2::Number, p::Poly, q::Poly )
+  return (1/b2)*(X*p - a*p - b*q)
+end
+
+#Generate n orthogonal polynomials on the real line.
+function oprl(a::Function, b::Function, n::Integer)
+  p = Array(Poly{Float64}, n+1)
+  p[1] = one(Poly{Float64})
+  p[2] = (1./b(1))*(X - a(1)*p[1])
+  for j = 3:n+1
+    p[j] = oprl_recurse(a(j-2), b(j-3), b(j-2), p[j-1], p[j-2])
+  end
+  return p
+end
+
+oprl(a::Array, b::Array, n::Integer) = oprl(i -> a[i+1], i -> b[i+1], n)
+
+#Generate n second kind polynomials on the real line.
+function oprl2(a::Function, b::Function, n::Integer)
+  p = Array(Poly{Float64}, n+1)
+  p[1] = zero(Poly{Float64})
+  p[2] = Poly([1])
+  for j = 3:n+1
+    p[j] = oprl_recurse(a(j-2), b(j-3), b(j-2), p[j-1], p[j-2])
+  end
+  return p
+end
+
+oprl2(a::Array, b::Array, n::Integer) = oprl2(i -> a[i+1], i -> b[i+1], n)
 
 end
 

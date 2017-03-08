@@ -24,6 +24,15 @@ function disccts(f, λ, P)
   0.5*(y1[end][1] + y2[end][2])
 end
 
+function perspec(f::Function, P, λmin, λmax)
+  Δ(λ) = disccts(f, λ, P)
+  
+end
+
+function aperspec(f::Function, λmin, λmax)
+
+end
+
 function plotspike(f::Function, P, λmax)
   disc = Fun(λ -> disccts(f, λ, P), Interval(0, λmax))
   heights = [acos(x) - eps()*im for x in roots(disc')]
@@ -108,7 +117,8 @@ function plotspike(a::Array{Float64}, b::Array{Float64})
   ddisc(x) = derivative(disc, x)
   heights = [imag(acos(0.5*disc(x) - eps()*im)) for x in fzeros(ddisc, -10, 10, no_pts=2000)]
   locations = [2π*n/length(heights) for n=1:length(heights)]
-  p = plot(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment)
+  m = maximum(abs(heights))
+  p = plot(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment, Coord.cartesian(ymin=-1*m, ymax=m))
   p
 end
 
@@ -158,13 +168,23 @@ function rmatUC(α::Number, z::Number)
 end
 
 # A transfer matrix for Szego recursion a la Simon
-function tmatUC(α::Array, z::Number)
-  n = length(α)
+function tmatUC(α::Function, z::Number, n::Integer)
+  #n = length(α)
   A = eye(2)
   for i = 1:n
-    A *= rmatUC(α[i], z)
+    A *= rmatUC(α(i), z)
   end
   A
+end
+
+tmatUC(α::Array, z::Number) = tmatUC(i -> α[i], z, length(α))
+
+function opucval(α, z, n, λ)
+  ϕ = [1. + 0.im, conj(λ)]
+  for i = 1:n
+    ϕ = [ϕ[1]*z - conj(α) * ϕ[2], ϕ[2] - α*z*ϕ[1]]
+  end
+  ϕ .* [1., λ]
 end
 
 # The transfer matrix for the Geronimo-Case version of OPUC recursion
@@ -185,7 +205,8 @@ function plotspike(α::Array)
   discriminant = Fun(x -> real(discUC(α, exp(im*x))), Interval(0, 2π))
   heights = [imag(acos(0.5*discriminant(x) - eps()*im)) for x in roots(discriminant')]
   locations = [2π*n/length(α) for n=1:length(heights)]
-  p = plot(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment)
+  m = maximum(abs(heights))
+  p = plot(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment, Coord.cartesian(ymin=-1.5m, ymax=1.5m))
   p
 end
 
@@ -265,6 +286,20 @@ function decomp(α, z, sign)
   η = (v[1] + v[2]) / 2
   ζ = (v[1] - v[2]) / 2
   (η, ζ)
+end
+
+function vbaker(α::Function, p::Integer, n::Integer, z::Number, sign::Integer)
+  coeff(k::Integer) = α[(x % p) + 1]
+  Δ = discUC(α, z)
+  ϕn = 
+  ϕp 
+  ψn 
+  ψp 
+  βn = Δ - 2
+  ηn =
+  βp
+  ηp
+
 end
 
 function baker(α::Array, n::Integer, z::Number, sign::Integer)
