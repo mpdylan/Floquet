@@ -179,13 +179,17 @@ end
 
 tmatUC(α::Array, z::Number) = tmatUC(i -> α[i], z, length(α))
 
-function opucval(α, z, n, λ)
-  ϕ = [1. + 0.im, conj(λ)]
+function opucval(α::Function, z::Number, n::Integer, λ::Number, normed=Bool)
+  ϕ = [1. + 0.0im, conj(λ)]
   for i = 1:n
-    ϕ = [ϕ[1]*z - conj(α) * ϕ[2], ϕ[2] - α*z*ϕ[1]]
+    ϕ = [ϕ[1]*z - conj(α(i)) * ϕ[2], ϕ[2] - α(i)*z*ϕ[1]]
+    if normed=true
+      ϕ *= sqrt(1 - α(i) * conj(α(i)))
   end
   ϕ .* [1., λ]
 end
+
+opucval(α::Array, z::Number, n::Integer, λ::Number) = opucval(i -> α[i], z, n, λ)
 
 # The transfer matrix for the Geronimo-Case version of OPUC recursion
 function tmatGC(α::Array, z::Number)
@@ -291,15 +295,14 @@ end
 function vbaker(α::Function, p::Integer, n::Integer, z::Number, sign::Integer)
   coeff(k::Integer) = α[(x % p) + 1]
   Δ = discUC(α, z)
-  ϕn = 
-  ϕp 
-  ψn 
-  ψp 
-  βn = Δ - 2
-  ηn =
-  βp
-  ηp
-
+  ϕn = opucval(α, z, n, 1.)
+  ϕp = opucval(α, z, p, 1.)
+  ψn = opucval(α, z, n, -1.)
+  ψp = opucval(α, z, p, -1.)
+  βn = Δ - 2ψn + sign*sqrt(Δ^2 - 4)
+  ηn = -2ϕn - Δ - sign*sqrt(Δ^2 - 4)
+  βp = Δ - 2ψp + sign*sqrt(Δ^2 - 4)
+  ηp = -2ϕn - Δ - sign*sqrt(Δ^2 - 4)
 end
 
 function baker(α::Array, n::Integer, z::Number, sign::Integer)
