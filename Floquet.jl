@@ -3,10 +3,12 @@ module Floquet
 import ODE.ode23
 import ForwardDiff.derivative
 importall ApproxFun
-importall Roots
-import Polynomials: Poly, polyval
+import Roots
+import Polynomials: Poly, polyval, roots
 importall Gadfly
 include("OPUC.jl")
+
+const τ = 2π
 
 ## Routines for the continuous setting
 
@@ -115,8 +117,8 @@ recdiscRL(a::Array, b::Array, x::Number) = recOPRL(a, b, x) - recOPRL2(a[1:end-1
 function plotspike(a::Array{Float64}, b::Array{Float64})
   disc(x) = recdiscRL(a, b, x)
   ddisc(x) = derivative(disc, x)
-  heights = [imag(acos(0.5*disc(x) - eps()*im)) for x in fzeros(ddisc, -10, 10, no_pts=2000)]
-  locations = [2π*n/length(heights) for n=1:length(heights)]
+  heights = [imag(acos(0.5*disc(x) - eps()*im)) for x in Roots.fzeros(ddisc, -10, 10, no_pts=2000)]
+  locations = [n/length(heights) for n=1:length(heights)]
   m = maximum(abs(heights))
   p = plot(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment, Coord.cartesian(ymin=-1*m, ymax=m))
   p
@@ -183,13 +185,14 @@ function opucval(α::Function, z::Number, n::Integer, λ::Number, normed=Bool)
   ϕ = [1. + 0.0im, conj(λ)]
   for i = 1:n
     ϕ = [ϕ[1]*z - conj(α(i)) * ϕ[2], ϕ[2] - α(i)*z*ϕ[1]]
-    if normed=true
-      ϕ *= sqrt(1 - α(i) * conj(α(i)))
+    if normed==true
+      ϕ /= sqrt(1 - α(i) * conj(α(i)))
+    end
   end
   ϕ .* [1., λ]
 end
 
-opucval(α::Array, z::Number, n::Integer, λ::Number) = opucval(i -> α[i], z, n, λ)
+opucval(α::Array, z::Number, n::Integer, λ::Number, normed=Bool) = opucval(i -> α[i], z, n, λ, normed)
 
 # The transfer matrix for the Geronimo-Case version of OPUC recursion
 function tmatGC(α::Array, z::Number)
@@ -240,6 +243,27 @@ function dirichlet(α::Array, z::Number)
   ϕ = T * [1., 1.]
   return ϕ[2] - ϕ[1]
 end
+
+function dirichletdata(α)
+  roots(Fun(x -> dirichlet(α, exp(im*x)), Interval(0, τ)))  
+end
+
+function plotspike_dir(α::Array)
+  discriminant = Fun(x -> real(discUC(α, exp(im*x))), Interval(0, 2π))
+  ϕ, ψ, norms = OPUC.opuc1(α, length(α))
+  dirdat = angle(Roots.roots(ψ[end] - ϕ[end]))
+  heights = [imag(acos(0.5*discriminant(x) - eps()*im)) for x in roots(discriminant')]
+
+  dirheights = [imag(acos(0.5*discriminant(x) - eps()*im)) for x in dirdat]
+  test = map(>, dirheights, heights)
+#  if sum(test) > 0
+#    dirheights = vcat(dirheights[end], dirheights[1:end-1])
+#  end
+  locations = [2π*n/length(α) for n=1:length(heights)]
+  m = maximum(abs(heights))
+  q = plot(layer(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment), layer(x=locations, y=dirheights, Geom.point))
+end
+
 
 function pspec(α::Array{Complex{Float64}})
   disc = Fun(x -> real(discUC(α, exp(im*x))), Interval(0,2π))
@@ -292,6 +316,7 @@ function decomp(α, z, sign)
   (η, ζ)
 end
 
+#=
 function vbaker(α::Function, p::Integer, n::Integer, z::Number, sign::Integer)
   coeff(k::Integer) = α[(x % p) + 1]
   Δ = discUC(α, z)
@@ -336,6 +361,7 @@ function adjbaker(α::Array, n::Integer, z::Number, sign::Integer)
   end
   return eigval[sign]^(-n / length(α)) * (num[1] - num[2]) / (denom[1] - denom[2])
 end
+=#
 
 function normbaker(α::Array, n::Integer, z::Number, sign::Integer)
   z^(-length(α) / 2) * adjbaker(α, n, z, sign)
