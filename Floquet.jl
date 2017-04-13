@@ -165,7 +165,7 @@ function rmatUC(α::Number, z::Number)
   A[1,2] = -1 * conj(α)
   A[2,1] = -α * z
   A[2,2] = 1
-  A /= sqrt(1 - α*conj(α))
+  A /= (1 - abs(α)^2)
   A
 end
 
@@ -251,17 +251,17 @@ end
 function plotspike_dir(α::Array)
   discriminant = Fun(x -> real(discUC(α, exp(im*x))), Interval(0, 2π))
   ϕ, ψ, norms = OPUC.opuc1(α, length(α))
-  dirdat = angle(Roots.roots(ψ[end] - ϕ[end]))
-  heights = [imag(acos(0.5*discriminant(x) - eps()*im)) for x in roots(discriminant')]
+  dirdat = sort(angle(Roots.roots(ψ[end] - ϕ[end]))) + π
+  heights = [imag(acos(0.5*real(discUC(α, exp(im*x))) - eps()*im)) for x in roots(discriminant')]
 
-  dirheights = [imag(acos(0.5*discriminant(x) - eps()*im)) for x in dirdat]
-  test = map(>, dirheights, heights)
+  dirheights = [imag(acos(0.5*real(discUC(α, exp(im*x))) - eps()*im)) for x in dirdat]
+#  test = map(>, dirheights, heights)
 #  if sum(test) > 0
 #    dirheights = vcat(dirheights[end], dirheights[1:end-1])
 #  end
   locations = [2π*n/length(α) for n=1:length(heights)]
   m = maximum(abs(heights))
-  q = plot(layer(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment), layer(x=locations, y=dirheights, Geom.point))
+  q = plot(layer(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment), layer(x=locations[1:length(dirheights)], y=dirheights, Geom.point))
 end
 
 
