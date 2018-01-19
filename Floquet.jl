@@ -6,6 +6,7 @@ importall ApproxFun
 import Roots
 import Polynomials: Poly, polyval, roots
 importall Gadfly
+import Plots
 include("OPUC.jl")
 
 const τ = 2π
@@ -26,14 +27,14 @@ function disccts(f, λ, P)
   0.5*(y1[end][1] + y2[end][2])
 end
 
-function perspec(f::Function, P, λmin, λmax)
-  Δ(λ) = disccts(f, λ, P)
-  
-end
+#function perspec(f::Function, P, λmin, λmax)
+#  Δ(λ) = disccts(f, λ, P)
+#  
+#end
 
-function aperspec(f::Function, λmin, λmax)
-
-end
+#function aperspec(f::Function, λmin, λmax)
+#
+#end
 
 function plotspike(f::Function, P, λmax)
   disc = Fun(λ -> disccts(f, λ, P), Interval(0, λmax))
@@ -255,10 +256,6 @@ function plotspike_dir(α::Array)
   heights = [imag(acos(0.5*real(discUC(α, exp(im*x))) - eps()*im)) for x in roots(discriminant')]
 
   dirheights = [imag(acos(0.5*real(discUC(α, exp(im*x))) - eps()*im)) for x in dirdat]
-#  test = map(>, dirheights, heights)
-#  if sum(test) > 0
-#    dirheights = vcat(dirheights[end], dirheights[1:end-1])
-#  end
   locations = [2π*n/length(α) for n=1:length(heights)]
   m = maximum(abs(heights))
   q = plot(layer(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment), layer(x=locations[1:length(dirheights)], y=dirheights, Geom.point))
@@ -381,6 +378,16 @@ function baker2(α::Array, n::Integer, z::Number, sign::Integer)
   end
   return (num[1] + num[2]) / (denom[1] + denom[2])
 end
+
+
+end
+
+module JacobiGLM
+
+    importall ApproxFun
+    import Polynomials: Poly, polyval, roots
+    import Roots
+
 
 
 end
