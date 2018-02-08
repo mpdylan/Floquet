@@ -23,9 +23,10 @@ dr(n) = -1*eye(n) + 1*lshift(n)
 # Darboux transformation functions
 
 function factor_reverse(λ, u)
+    n = length(u)
     μl = ( dl(n) * u ) ./ u
     μr = ( dr(n) * u ) ./ u
-    (dr(n) + diagm(ul)) * (dl(n) + lshift(n)*diagm(ur)) + λ*eye(n)
+    (dr(n) + diagm(μl)) * (dl(n) + rshift(n)*diagm(μr)) + λ*eye(n)
 end
 
 end
