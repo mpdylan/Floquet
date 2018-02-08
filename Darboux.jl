@@ -27,3 +27,5 @@ function factor_reverse(λ, u)
     μr = ( dr(n) * u ) ./ u
     (dr(n) + diagm(ul)) * (dl(n) + lshift(n)*diagm(ur)) + λ*eye(n)
 end
+
+end
