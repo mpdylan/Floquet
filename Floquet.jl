@@ -4,7 +4,7 @@ import ODE.ode23
 import ForwardDiff.derivative
 importall ApproxFun
 import Roots
-import Polynomials: Poly, polyval, roots
+import Polynomials
 importall Gadfly
 import Plots
 include("OPUC.jl")
@@ -40,7 +40,7 @@ function plotspike(f::Function, P, λmax)
   disc = Fun(λ -> disccts(f, λ, P), Interval(0, λmax))
   heights = [acos(x) - eps()*im for x in roots(disc')]
   locs = [nπ/P for n = 1:length(heights)]
-  p = plot(x=locs, xend=locs, y=-1*heights, yend=heights, Geom.segment)
+  p = Plots.plot(x=locs, xend=locs, y=-1*heights, yend=heights, Geom.segment)
   p
 end
 
@@ -161,7 +161,7 @@ end
 
 # A recurrence matrix
 function rmatUC(α::Number, z::Number)
-  A = Array(typeof(α), 2, 2)
+  A = Array{typeof(α)}(2, 2)
   A[1,1] = z
   A[1,2] = -1 * conj(α)
   A[2,1] = -α * z
@@ -221,7 +221,7 @@ end
 function transcoeff(α::Array, p, z)
   ϕ = OPUC.opuc1(α, p)[1][p] / OPUC.opuc1(α, p)[3][p]
   ψ = OPUC.opuc2(α, p)[1][p] / OPUC.opuc2(α, p)[3][p]
-  return (z^(-p/2) * (polyval(ϕ, z) + polyval(ψ, z)))
+  return (z^(-p/2) * (Polynomials.polyval(ϕ, z) + Polynomials.polyval(ψ, z)))
 end
 
 function trco(α::Array, z::Number, p::Integer)
@@ -252,7 +252,7 @@ end
 function plotspike_dir(α::Array)
   discriminant = Fun(x -> real(discUC(α, exp(im*x))), Interval(0, 2π))
   ϕ, ψ, norms = OPUC.opuc1(α, length(α))
-  dirdat = sort(angle(Roots.roots(ψ[end] - ϕ[end]))) + π
+  dirdat = sort(angle.(Polynomials.roots(ψ[end] - ϕ[end]))) + π
   heights = [imag(acos(0.5*real(discUC(α, exp(im*x))) - eps()*im)) for x in roots(discriminant')]
 
   dirheights = [imag(acos(0.5*real(discUC(α, exp(im*x))) - eps()*im)) for x in dirdat]
@@ -313,52 +313,6 @@ function decomp(α, z, sign)
   (η, ζ)
 end
 
-#=
-function vbaker(α::Function, p::Integer, n::Integer, z::Number, sign::Integer)
-  coeff(k::Integer) = α[(x % p) + 1]
-  Δ = discUC(α, z)
-  ϕn = opucval(α, z, n, 1.)
-  ϕp = opucval(α, z, p, 1.)
-  ψn = opucval(α, z, n, -1.)
-  ψp = opucval(α, z, p, -1.)
-  βn = Δ - 2ψn + sign*sqrt(Δ^2 - 4)
-  ηn = -2ϕn - Δ - sign*sqrt(Δ^2 - 4)
-  βp = Δ - 2ψp + sign*sqrt(Δ^2 - 4)
-  ηp = -2ϕn - Δ - sign*sqrt(Δ^2 - 4)
-end
-
-function baker(α::Array, n::Integer, z::Number, sign::Integer)
-  coeff(k::Integer) = α[(k % length(α)) + 1]
-  A = tmatUC(α, z)
-  eigval, evec = eig(A)
-  if abs(trace(z^(-length(α) / 2) * A)) > 2
-    evec = evec[:, sortperm(eigval, by=abs)]
-  end
-  denom = evec[:, sign]
-  num = evec[:, sign]
-  for i = 1:n
-    num = rmatUC(coeff(i), z) * num
-  end
-  return (num[1] - num[2]) / (denom[1] - denom[2])
-end
-
-function adjbaker(α::Array, n::Integer, z::Number, sign::Integer)
-  coeff(k::Integer) = α[(k % length(α)) + 1]
-  A = tmatUC(α, z)
-  eigval, evec = eig(A)
-  if abs(trace(z^(-length(α) / 2) * A)) > 2
-    p = sortperm(eigval, by=abs)
-    evec = evec[:, p]
-    permute!(eigval, p)
-  end
-  denom = evec[:, sign]
-  num = evec[:, sign]
-  for i = 1:n
-    num = rmatUC(coeff(i), z) * num
-  end
-  return eigval[sign]^(-n / length(α)) * (num[1] - num[2]) / (denom[1] - denom[2])
-end
-=#
 
 function normbaker(α::Array, n::Integer, z::Number, sign::Integer)
   z^(-length(α) / 2) * adjbaker(α, n, z, sign)
