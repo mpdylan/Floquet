@@ -9,7 +9,7 @@ importall Gadfly
 import Plots
 include("OPUC.jl")
 
-const τ = 2π
+const τ = 2π   # naturally
 
 ## Routines for the continuous setting
 
@@ -29,7 +29,7 @@ end
 
 #function perspec(f::Function, P, λmin, λmax)
 #  Δ(λ) = disccts(f, λ, P)
-#  
+#
 #end
 
 #function aperspec(f::Function, λmin, λmax)
@@ -49,8 +49,8 @@ end
 function permat(pot::Array, h)
   n = 2*length(pot)
   C = zeros(typeof(h), n, n)
-  for i = 1:n-1 
-    C[i, i+1] = 1 
+  for i = 1:n-1
+    C[i, i+1] = 1
   end
   C += transpose(C)
   for i = 1:div(n,2)
@@ -64,7 +64,7 @@ end
 
 # A single recursion matrix for OPRL/Jacobi
 function rmatRL(a::Number, x::Number)
-  A = Array(Float64, 2, 2)
+  A = Array{Float64}(2, 2)
   A[1,1] = x - a
   A[1,2] = -1
   A[2,1] = 1
@@ -81,7 +81,7 @@ function tmatRL(a::Array, x::Number)
   A
 end
 
-# Floquet discriminant for OPRL/Jacobi 
+# Floquet discriminant for OPRL/Jacobi
 function discRL(pot::Array, x::Number)
   n = length(pot)
   A = SymTridiagonal(pot, ones(typeof(pot[1]),n-1)) - SymTridiagonal(fill(x, n), zeros(n-1))
@@ -127,7 +127,7 @@ end
 
 # Incomplete, fix this
 function rmatGC(α::Number, z::Number, j::Int64)
-  A = Array(typeof(α), 2, 2)
+  A = Array{typeof(α}(2, 2)
   A[1,1] = z
   A[1,2] = -1 * conj(α) * z^j
   A[2,1] = -α * z^(-j)
@@ -246,7 +246,7 @@ function dirichlet(α::Array, z::Number)
 end
 
 function dirichletdata(α)
-  roots(Fun(x -> dirichlet(α, exp(im*x)), Interval(0, τ)))  
+  roots(Fun(x -> dirichlet(α, exp(im*x)), Interval(0, τ)))
 end
 
 function plotspike_dir(α::Array)
