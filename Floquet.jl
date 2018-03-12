@@ -127,7 +127,7 @@ end
 
 # Incomplete, fix this
 function rmatGC(α::Number, z::Number, j::Int64)
-  A = Array{typeof(α}(2, 2)
+  A = Array{typeof(α)}(2, 2)
   A[1,1] = z
   A[1,2] = -1 * conj(α) * z^j
   A[2,1] = -α * z^(-j)
@@ -213,7 +213,7 @@ function plotspike(α::Array)
   discriminant = Fun(x -> real(discUC(α, exp(im*x))), Interval(0, 2π))
   heights = [imag(acos(0.5*discriminant(x) - eps()*im)) for x in roots(discriminant')]
   locations = [2π*n/length(α) for n=1:length(heights)]
-  m = maximum(abs(heights))
+  m = maximum(abs.(heights))
   p = plot(x=locations, xend=locations, y=heights, yend=-1*heights, Geom.segment, Coord.cartesian(ymin=-1.5m, ymax=1.5m))
   p
 end
