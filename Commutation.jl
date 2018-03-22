@@ -44,16 +44,16 @@ ushift(f::Function) = (n -> dl(μr(f))(n) + dr(μl(f))(n))
 function weyl(J::Array{Float64, 2}, λ::Number, condition::Symbol)
     if condition == :-
         result = Array{Float64}(size(J)[1])
-        result[1] = 0
-        result[2] = 0
+        result[1] = eps()
+        result[2] = eps()
         for i = 3:(length(result))
             result[i] = (λ - J[i-1,i-1]) * result[i-1] - result[i-2]
         end
     end
     if condition == :+
         result = Array{Float64}(size(J)[1])
-        result[end] = 0
-        result[end-1] = 0
+        result[end] = eps()
+        result[end-1] = eps()
         for i = length(result)-2:-1:1
             result[i] = (λ - J[i+1,i+1]) * result[i+1] - result[i+2]
         end
