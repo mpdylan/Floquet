@@ -81,6 +81,7 @@ function oprl(a::Function, b::Function, n::Integer)
   return p
 end
 
+#Array version of the previous function
 oprl(a::Array, b::Array, n::Integer) = oprl(i -> a[i+1], i -> b[i+1], n)
 
 #Generate n second kind polynomials on the real line.
@@ -94,6 +95,7 @@ function oprl2(a::Function, b::Function, n::Integer)
   return p
 end
 
+#Array version of the previous function
 oprl2(a::Array, b::Array, n::Integer) = oprl2(i -> a[i+1], i -> b[i+1], n)
 
 end
