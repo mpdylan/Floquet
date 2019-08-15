@@ -74,8 +74,13 @@ function factor_reverse(J::Array{Float64, 2}, λ::Number, condition::Symbol)
     factor_reverse(u, λ)
 end
 
-function factor_reverse(λ::Number, u::Function)
-    
+# Perform single commutation using the formulas from Teschl
+
+function offdiag(n::Integer, b::Function, u::Function)
+    -sqrt( b(n) * b(n + 1) * u(n) * u(n + 2) ) / u(n + 1)
+end
+function diagentry(n::Integer, a::Function, u::Function, λ::Number)
+    λ - a(n) * (u(n) / u(n+1) + u(n+1) / u(n))
 end
 
 end

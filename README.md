@@ -10,11 +10,11 @@ This package contains routines for calculating Floquet discriminants for three d
 * Schroedinger operators on the real line
 * Discrete Schroedinger operators and Jacobi matrices (related to polynomials orthogonal on the real line)
 * Szego recurrence relations (related to polynomials orthogonal on the unit circle)
-There is also a submodule OPUC which can compute the relevant orthogonal polynomials, which are used in the
+There is also a submodule OPUC which can compute the relevant orthogonal polynomials, which are used in the latter two settings.
 
 ## Requirements
 This requires the following Julia packages:
 * Polynomials
 * ODE
 * ApproxFun
-* 
+* ForwardDiff 

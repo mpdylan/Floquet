@@ -82,10 +82,10 @@ function tmatRL(a::Array, x::Number)
 end
 
 # Floquet discriminant for OPRL/Jacobi
-function discRL(pot::Array, x::Number)
-  n = length(pot)
-  A = SymTridiagonal(pot, ones(typeof(pot[1]),n-1)) - SymTridiagonal(fill(x, n), zeros(n-1))
-  B = SymTridiagonal(pot[2:n-1], ones(typeof(pot[1]), n-3)) - SymTridiagonal(fill(x, n-2), zeros(n-3))
+function discRL(a::Array, b::Array, x::Number)
+  n = length(a)
+  A = SymTridiagonal(a, b) - SymTridiagonal(fill(x, n), zeros(n-1))
+  B = SymTridiagonal(a[2:n-1], b[2:n-2]) - SymTridiagonal(fill(x, n-2), zeros(n-3))
   return (det(A) - det(B))
 end
 
